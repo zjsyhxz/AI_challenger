@@ -1,5 +1,5 @@
 # coding=utf-8
-# version - 1.0
+# version - 1.1
 import gensim
 import jieba
 import jieba.analyse
@@ -9,9 +9,16 @@ from keras.preprocessing.sequence import pad_sequences
 
 class Preprocessing(object):
 
-    def __init__(self):
-        self.data = pd.read_csv("./data/train.csv")
+    def __init__(self, file_path, head_num=None):
+        """
+        :param file_path: 数据集文件路径
+        :param head_num: 截取开头部分数据（默认为None表示不截取）
+        """
+        self.data = pd.read_csv(file_path)
+        if head_num is not None:
+            self.data = self.data.head(head_num)
         self.stopwords = [line.strip() for line in open('./dict/stopwords.txt', 'r', encoding='utf-8').readlines()]
+        self.columns = self.data.columns[-20:].tolist()  # 20个细粒度列名
         # 预处理参数修改
         self.model_exist = False  # 是否使用已训练的结果
         self.min_count = 1  # 词向量最小频数
@@ -44,3 +51,10 @@ class Preprocessing(object):
         :return: 每条评论的矩阵大小
         """
         return self.max_length, self.size
+
+    def get_labels(self, column_name):
+        """
+        :param column_name: 列名
+        :return: 作为输入数据的标签
+        """
+        return self.data[column_name].tolist()
